@@ -143,16 +143,14 @@ limitations under the License.
               <thead>
                 <tr>
                   <th>Time</th>
-                  <th>Method</th>
-                  <th>Resource &amp; Status</th>
+                  <th>Info</th>
                 </tr>
               </thead>
               <tbody>
               {% for log in logs %}
                 <tr>
                   <td>{{ log.timestamp }}</td>
-                  <td>{{ log.method }}</td>
-                  <td>{{ log.resource }} - {{ log.status }}
+                  <td>{{ log.method }} - <b>{{ log.resource }}</b> - {{ log.status }}
                     {% if log.app_logs %}
                       <br/><ul>
                         {% for app_log in log.app_logs %}
