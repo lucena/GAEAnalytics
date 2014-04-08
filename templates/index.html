@@ -105,7 +105,12 @@ limitations under the License.
               <div class="col-md-2"><label for="logMessage">Message:</label></div>
               <div class="col-md-10">
                 <input class="width-400" type="text" name="logMessage" id="logMessage"
-                       value="Logging a message."/></div>
+                       value="Enter your message here."/></div>
+            </div>
+            <div class="row height-40">
+              <div class="col-md-2">&nbsp;</div>
+              <div class="col-md-10"><input type="checkbox" id="crashPage" name="crashPage" />
+                Crash the page.</div>
             </div>
             <div class="row height-40">
               <div class="col-md-2">&nbsp;</div>
@@ -117,7 +122,8 @@ limitations under the License.
           </form>
           {% if infoMessage %}
             <div id="infoMessage" class="alert alert-info">
-              {{ infoMessage }}
+              {{ infoMessage }}<br/>
+              <a href="{{ page }}">Click to Refresh</a>.
             </div>
           {% endif %}
           {% if errorMessage %}

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Example Genomics Map Reduce
+Example Google App Engine Analytics integration.
 """
 
 import datetime
@@ -69,12 +69,18 @@ class MainHandler(webapp2.RequestHandler):
     infoMessage = None
     errorMessage = None
 
+    # Log a message if requested.
     if self.request.get("submitCreate"):
       level = int(self.request.get("logLevel"))
       message = str(self.request.get("logMessage"))
       self._log_message(level, message)
       infoMessage = str.format("Logged the following: %s - %s" %
                                (LOG_LEVELS[level], message))
+
+    # Crash the page if requested.
+    if self.request.get('crashPage'):
+      raise Exception("Aw Snap! You just crashed my app.")
+
     # Render the page.
     self._render_page(infoMessage, errorMessage)
 
@@ -91,15 +97,17 @@ class MainHandler(webapp2.RequestHandler):
 
   def _log_message(self, level, message):
     if level == logservice.LOG_LEVEL_DEBUG:
-       logging.debug(message)
+      logging.debug(message)
     elif level == logservice.LOG_LEVEL_INFO:
-       logging.info(message)
+      logging.info(message)
     elif level == logservice.LOG_LEVEL_WARNING:
-       logging.warning(message)
+      logging.warning(message)
     elif level == logservice.LOG_LEVEL_ERROR:
-       logging.error(message)
+      logging.error(message)
     elif level == logservice.LOG_LEVEL_CRITICAL:
-       logging.critical(message)
+      logging.critical(message)
+    else:
+      raise Exception("Unknown Logging Level %s", str(level))
 
   def _get_log_messages(self):
     logs = []
