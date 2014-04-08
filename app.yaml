@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-application: zettaneerpdq
+application: paranhao69
 version: gaeanalytics1
 runtime: python27
 api_version: 1
-threadsafe: no
+threadsafe: yes
 
 handlers:
 # Load the favicon from the usual place.
