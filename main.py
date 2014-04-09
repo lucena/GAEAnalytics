@@ -67,7 +67,7 @@ class AnalyticsStatus(ndb.Model):
 class MainHandler(webapp2.RequestHandler):
   """The main page."""
 
-  _LOG_MESSAGES_TO_DISPLAY = 20
+  LOG_MESSAGES_NUM_TO_DISPLAY = 20
 
   def get(self):
     user = users.get_current_user()
@@ -147,14 +147,13 @@ class MainHandler(webapp2.RequestHandler):
       logs.append(log)
       index += 1
       if index > count:
-        #self._update_analytics_status(log.start_time, log.offset)
         break
     return logs
 
   def _render_page(self, alertMessage, alertLevel):
     username = users.User().nickname()
     template = JINJA_ENVIRONMENT.get_template('index.html')
-    logs = self._get_log_messages(None, self._LOG_MESSAGES_TO_DISPLAY)
+    logs = self._get_log_messages(None, self.LOG_MESSAGES_NUM_TO_DISPLAY)
     lastpushtime, offset = self._get_analytics_status()
     self.response.out.write(template.render({
       "pages": PAGES,
@@ -178,7 +177,18 @@ class MainHandler(webapp2.RequestHandler):
 
   def _get_analytics_status(self):
     analytics = self._get_current_analytics_status()
-    return analytics.lastpushtime, analytics.offset
+    lastpushtime = analytics.lastpushtime
+    offset = analytics.offset
+    # If the record doesn't exist then bootstrap the value
+    if offset == None:
+      logs = self._get_log_messages(None, 1, logservice.LOG_LEVEL_INFO)
+      if (len(logs) == 1):
+        lastpushtime = logs[0].start_time
+        offset = logs[0].offset
+      else:
+        # Only need to set the last push time, leave offset as None.
+        lastpushtime = 0
+    return lastpushtime, offset
 
   def _push_logs_to_ga(self):
     lastpushtime, offset = self._get_analytics_status()
