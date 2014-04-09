@@ -23,11 +23,14 @@ import logging
 import os
 import time
 import webapp2
+import urllib
 
-from google.appengine.api import users
-from google.appengine.api.logservice import logservice
 from collections import OrderedDict
 from common import Common
+from google.appengine.api import users
+from google.appengine.api import urlfetch
+from google.appengine.api.logservice import logservice
+from google.appengine.ext import ndb
 
 Common.initialize()
 
@@ -52,8 +55,19 @@ PAGES = OrderedDict([
          ('/contact', "Contact"),
          ])
 
+GA_URL_ENDPOINT = "http://www.google-analytics.com/collect"
+GA_PROPERTY_ID = "UA-49801701-2"
+GA_ANONYMOUS_CLIENT_ID = "1234567890"  # ???
+
+class AnalyticsStatus(ndb.Model):
+  lastpushtime = ndb.FloatProperty()
+  offset = ndb.StringProperty()
+
+
 class MainHandler(webapp2.RequestHandler):
   """The main page."""
+
+  _LOG_MESSAGES_TO_DISPLAY = 20
 
   def get(self):
     user = users.get_current_user()
@@ -66,23 +80,31 @@ class MainHandler(webapp2.RequestHandler):
       }))
 
   def post(self):
-    infoMessage = None
-    errorMessage = None
+    alertMessage = None
+    alertLevel = None
 
     # Log a message if requested.
     if self.request.get("submitCreate"):
-      level = int(self.request.get("logLevel"))
-      message = str(self.request.get("logMessage"))
-      self._log_message(level, message)
-      infoMessage = str.format("Logged the following: %s - %s" %
-                               (LOG_LEVELS[level], message))
+      logLevel = int(self.request.get("logLevel"))
+      logMessage = str(self.request.get("logMessage"))
+      self._log_message(logLevel, logMessage)
+      alertMessage = str.format("Logged the following: %s - %s" %
+                               (LOG_LEVELS[logLevel], logMessage))
+      alertLevel = "alert-info"
 
     # Crash the page if requested.
     if self.request.get('crashPage'):
       raise Exception("Aw Snap! You just crashed my app.")
 
+    # Push logs if requested.
+    if self.request.get("submitPush"):
+      count = self._push_logs_to_ga()
+      alertMessage = str.format("Pushed %d app logs to Google Analytics." %
+                                (count))
+      alertLevel = "alert-info"
+
     # Render the page.
-    self._render_page(infoMessage, errorMessage)
+    self._render_page(alertMessage, alertLevel)
 
   def _get_version(self):
     version = self.request.environ["CURRENT_VERSION_ID"].split('.')
@@ -109,13 +131,15 @@ class MainHandler(webapp2.RequestHandler):
     else:
       raise Exception("Unknown Logging Level %s", str(level))
 
-  def _get_log_messages(self):
+  def _get_log_messages(self, offset, count,
+                        min_level=logservice.LOG_LEVEL_DEBUG):
     logs = []
-    count = 20
     index = 1
     for log in logservice.fetch(end_time=time.time(), offset=None,
-                                minimum_log_level=logservice.LOG_LEVEL_DEBUG,
+                                minimum_log_level=min_level,
                                 include_app_logs=True):
+      if log.offset == offset:
+        break
       log.timestamp = datetime.datetime.fromtimestamp(log.start_time)
       for app_log in log.app_logs:
         app_log.timestamp = datetime.datetime.fromtimestamp(app_log.time)
@@ -123,24 +147,77 @@ class MainHandler(webapp2.RequestHandler):
       logs.append(log)
       index += 1
       if index > count:
+        #self._update_analytics_status(log.start_time, log.offset)
         break
     return logs
 
-  def _render_page(self, infoMessage, errorMessage):
+  def _render_page(self, alertMessage, alertLevel):
     username = users.User().nickname()
     template = JINJA_ENVIRONMENT.get_template('index.html')
-    logs = self._get_log_messages()
+    logs = self._get_log_messages(None, self._LOG_MESSAGES_TO_DISPLAY)
+    lastpushtime, offset = self._get_analytics_status()
     self.response.out.write(template.render({
       "pages": PAGES,
       "path": self.request.path,
       "pagename": self._get_page_name(),
       "username": username,
       "version": self._get_version(),
-      "infoMessage": infoMessage,
-      "errorMessage": errorMessage,
-      "logs": self._get_log_messages(),
+      "lastpush": datetime.datetime.fromtimestamp(lastpushtime),
+      "alertMessage": alertMessage,
+      "alertLevel": alertLevel,
+      "logs": logs,
     }))
 
+  def _get_current_analytics_status(self):
+    return AnalyticsStatus.get_or_insert("CurrentStatus")
+
+  def _update_analytics_status(self, lastpushtime, offset):
+    analytics = self._get_current_analytics_status()
+    analytics.populate(lastpushtime=lastpushtime, offset=offset)
+    analytics.put()
+
+  def _get_analytics_status(self):
+    analytics = self._get_current_analytics_status()
+    return analytics.lastpushtime, analytics.offset
+
+  def _push_logs_to_ga(self):
+    lastpushtime, offset = self._get_analytics_status()
+    logs = self._get_log_messages(offset, 100, logservice.LOG_LEVEL_INFO)
+    count = 0
+    firstTime = True
+    for log in logs:
+      if firstTime:
+        lastpushtime = log.start_time
+        offset = log.offset
+        firstTime = False
+      # Update GA with every app log
+      for app_log in log.app_logs:
+        timestamp = str(datetime.datetime.fromtimestamp(app_log.time))
+        level = LOG_LEVELS[app_log.level]
+        message = app_log.message
+        description = str.format("%s - %s - %s" % (timestamp, level, message))
+        isFatal = 1 if app_log.level == logservice.LOG_LEVEL_CRITICAL else 0
+        count += 1
+        self._post_to_ga("exception", description, isFatal)
+    # Save your place.
+    self._update_analytics_status(lastpushtime, offset)
+    return count
+
+  def _post_to_ga(self, type, description, isFatal):
+    form_fields = {
+      "v": "1",
+      "tid": GA_PROPERTY_ID,
+      "cid": GA_ANONYMOUS_CLIENT_ID,
+      "t": type,
+      "exd": description,
+      "exf": isFatal,
+    }
+    form_data = urllib.urlencode(form_fields)
+    result = urlfetch.fetch(url=GA_URL_ENDPOINT,
+        payload=form_data,
+        method=urlfetch.POST,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    logging.debug("Response: Status Code: %s", result.status_code)
 
 # For demo purposes, map many sample pages to this handler.
 app = webapp2.WSGIApplication(

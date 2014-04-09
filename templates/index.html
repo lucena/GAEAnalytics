@@ -73,102 +73,111 @@ limitations under the License.
 </div>
 
 <div class="container theme-showcase" role="main">
-  <h1> {{ pagename }} </h1>
-  <div class="row">
-    <div class="col-md-10">
-      <div class="row">
-        <div class="col-md-6">Welcome {{ username }}.</div>
-        <div class="col-md-6 align-right">Version: {{ version }}</div>
-      </div>
-      <br/><br/>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">App Log Generation</h3>
-        </div>
-        <div class="panel-body">
-          <b>Create an app log entry with the following parameters.</b>
-          <br/><br/>
-          <form id="logEntryForm" name="logEntryForm" action="{{ path }}" method="POST">
-            <div class="row height-40">
-              <div class="col-md-2"><label for="logLevel">Log level:</label></div>
-              <div class="col-md-10">
-                <select name="logLevel" id="logLevel" >
-                  <option value="0">Debug</option>
-                  <option value="1">Info</option>
-                  <option value="2">Warning</option>
-                  <option value="3">Error</option>
-                  <option value="4">Critical</option>
-                </select>
-              </div>
-            </div>
-            <div class="row height-40">
-              <div class="col-md-2"><label for="logMessage">Message:</label></div>
-              <div class="col-md-10">
-                <input class="width-400" type="text" name="logMessage" id="logMessage"
-                       value="Enter your message here."/></div>
-            </div>
-            <div class="row height-40">
-              <div class="col-md-2">&nbsp;</div>
-              <div class="col-md-10"><input type="checkbox" id="crashPage" name="crashPage" />
-                Crash the page.</div>
-            </div>
-            <div class="row height-40">
-              <div class="col-md-2">&nbsp;</div>
-              <div class="col-md-10">
-                <input class="btn btn-primary" type="submit" id="submitCreate"
-                       name="submitCreate" value="Submit" />
-              </div>
-            </div>
-          </form>
-          {% if infoMessage %}
-            <div id="infoMessage" class="alert alert-info">
-              {{ infoMessage }}<br/>
-              <a href="{{ page }}">Click to Refresh</a>.
-            </div>
-          {% endif %}
-          {% if errorMessage %}
-            <div id="errorMessage" class="alert alert-danger">
-              {{ errorMessage }}
-            </div>
-          {% endif %}
+  <h1>{{ pagename }}</h1>
+  <p>The specific {{ pagename }} page content would go here.</p>
+  <br/>
+  {% if alertMessage %}
+    <div id="alertMessage" class="alert {{ alertLevel }}">
+      {{ alertMessage }}<br/>
+      <a href="{{ page }}">[Click to Refresh this page]</a>.
+    </div>
+  {% endif %}
+  <form id="logEntryForm" name="logEntryForm" action="{{ path }}" method="POST">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">App Log Generation</h3>
+    </div>
+    <div class="panel-body">
+      <p><b>Create an app log entry with the following parameters.</b></p>
+      </br>
+      <div class="row height-40">
+        <div class="col-md-2"><label for="logLevel">Log level:</label></div>
+        <div class="col-md-10">
+          <select name="logLevel" id="logLevel" >
+            <option value="0">Debug</option>
+            <option value="1" SELECTED>Info</option>
+            <option value="2">Warning</option>
+            <option value="3">Error</option>
+            <option value="4">Critical</option>
+          </select>
         </div>
       </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Log History</h3>
-        </div>
-        <div class="panel-body">
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Info</th>
-                </tr>
-              </thead>
-              <tbody>
-              {% for log in logs %}
-                <tr>
-                  <td>{{ log.timestamp }}</td>
-                  <td>{{ log.method }} - <b>{{ log.resource }}</b> - {{ log.status }}
-                    {% if log.app_logs %}
-                      <br/><ul>
-                        {% for app_log in log.app_logs %}
-                          <li>{{ app_log.timestamp }} -
-                          <b>{{ app_log.level_name }}</b> -
-                          {{ app_log.message }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-              </tbody>
-            </table>
-          </div>
+      <div class="row height-40">
+        <div class="col-md-2"><label for="logMessage">Message:</label></div>
+        <div class="col-md-10">
+          <input class="width-400" type="text" name="logMessage" id="logMessage"
+                 value="Enter your message here."/></div>
+      </div>
+      <div class="row height-40">
+        <div class="col-md-2">&nbsp;</div>
+        <div class="col-md-10"><input type="checkbox" id="crashPage" name="crashPage" />
+          Crash the page.</div>
+      </div>
+      <div class="row height-40">
+        <div class="col-md-2">&nbsp;</div>
+        <div class="col-md-10">
+          <input class="btn btn-primary" type="submit" id="submitCreate"
+                 name="submitCreate" value="Create" />
         </div>
       </div>
     </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Push to Google Analytics</h3>
+    </div>
+    <div class="panel-body">
+      <p>Logs last pushed: <b>{{ lastpush }}</b>.<br/>
+      Only messages of log level <b>Info</b> and higher will be pushed.</p>
+      <br/>
+      <div class="row height-40">
+        <div class="col-md-2">&nbsp;</div>
+        <div class="col-md-10">
+          <input class="btn btn-success" type="submit" id="submitPush"
+                 name="submitPush" value="Push" />
+        </div>
+      </div>
+    </div>
+  </div>
+  </form>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Log History</h3>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Info</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for log in logs %}
+            <tr>
+              <td>{{ log.timestamp }}</td>
+              <td>{{ log.method }} - <b>{{ log.resource }}</b> - {{ log.status }}
+                {% if log.app_logs %}
+                  <br/><ul>
+                    {% for app_log in log.app_logs %}
+                      <li>{{ app_log.timestamp }} -
+                      <b>{{ app_log.level_name }}</b> -
+                      {{ app_log.message }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">Welcome {{ username }}.</div>
+    <div class="col-md-6 align-right">Version: {{ version }}</div>
   </div>
 </div>
 </body>
