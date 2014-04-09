@@ -20,8 +20,8 @@ body {
   padding-top: 60px;
 }
 
-.height-40 {
-  height: 40px;
+.row {
+  margin-bottom: 20px;
 }
 
 .width-400 {
