@@ -67,6 +67,7 @@ class AnalyticsStatus(ndb.Model):
 class MainHandler(webapp2.RequestHandler):
   """The main page."""
 
+  # Number of log messages to display in the web page.
   LOG_MESSAGES_NUM_TO_DISPLAY = 20
 
   def get(self):
@@ -227,7 +228,7 @@ class MainHandler(webapp2.RequestHandler):
         payload=form_data,
         method=urlfetch.POST,
         headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    logging.debug("Response: Status Code: %s", result.status_code)
+    logging.debug("Post to Google Analytics returned: %s", result.status_code)
 
 # For demo purposes, map many sample pages to this handler.
 app = webapp2.WSGIApplication(
