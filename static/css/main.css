@@ -18,28 +18,9 @@ limitations under the License.
 /* html styles */
 body {
   padding-top: 60px;
-}
-
-.row {
-  margin-bottom: 20px;
-}
-
-.width-400 {
-  width: 400px;
-}
-
-.align-right {
-  text-align: right;
-}
-
-label {
-  font-weight: normal !important;
+  padding-bottom: 20px;
 }
 
 label.error {
-  color: #c9302c;
-}
-
-input.error {
-   border: 2px solid #c9302c;
+  color: #a94442;
 }

@@ -14,3 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+$(function() {
+    $("#logEntryForm").validate({
+        rules: {
+            logMessage: "required",
+        },
+        messages: {
+          logMessage: "Please provide a message to log.",
+        },
+        highlight: function(element) {
+            $(element).parent().parent().addClass("has-error");
+        },
+        unhighlight: function(element) {
+            $(element).parent().parent().removeClass("has-error");
+        },
+        submitHandler: function(form) {
+            $('#alertMessage').hide();
+            form.submit();
+        }
+    });
+});
