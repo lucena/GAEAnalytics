@@ -82,8 +82,6 @@ limitations under the License.
       <a href="{{ page }}">[Click to Refresh this page]</a>.
     </div>
   {% endif %}
-  <form id="logEntryForm" name="logEntryForm" action="{{ path }}" method="POST"
-    class="form-horizontal" role="form">
   <div class="panel panel-default">
     <div class="panel-heading">
       <h3 class="panel-title">App Log Generation</h3>
@@ -91,39 +89,43 @@ limitations under the License.
     <div class="panel-body">
       <p><b>Create an app log entry with the following parameters.</b></p>
       </br>
-      <div class="form-group">
-        <label for="logLevel" class="col-sm-2 control-label">Log level:</label>
-        <div class="col-sm-10">
-          <select name="logLevel" id="logLevel" class="form-control">
-            <option value="0">Debug</option>
-            <option value="1" SELECTED>Info</option>
-            <option value="2">Warning</option>
-            <option value="3">Error</option>
-            <option value="4">Critical</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="logMessage" class="col-sm-2 control-label">Message:</label>
-        <div class="col-sm-10">
-          <input class="form-control" type="text" name="logMessage" id="logMessage"
-                 value="Enter your message here."/></div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" id="crashPage" name="crashPage" />Crash the page.
-            </label>
+      <form id="logEntryForm" name="logEntryForm" action="{{ path }}" method="POST"
+        class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="logLevel" class="col-sm-2 control-label">Log level:</label>
+          <div class="col-sm-10">
+            <select name="logLevel" id="logLevel" class="form-control">
+              <option value="0">Debug</option>
+              <option value="1" SELECTED>Info</option>
+              <option value="2">Warning</option>
+              <option value="3">Error</option>
+              <option value="4">Critical</option>
+            </select>
           </div>
         </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <input class="btn btn-primary" type="submit" id="submitCreate"
-                 name="submitCreate" value="Create" />
+        <div class="form-group">
+          <label for="logMessage" class="col-sm-2 control-label">Message:</label>
+          <div class="col-sm-10">
+            <input class="form-control" type="text" name="logMessage" id="logMessage"
+                   value="Enter your message here."/>
+          </div>
         </div>
-      </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" id="crashPage" name="crashPage" />Crash the page.
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <input class="btn btn-primary" type="submit" id="submitCreate"
+                   name="submitCreate" value="Create" />
+          </div>
+        </div>
+      </form>
     </div>
   </div>
   <div class="panel panel-default">
@@ -134,15 +136,17 @@ limitations under the License.
       <p>Logs last pushed: <b>{{ lastpush }}</b>.<br/>
       Only messages of log level <b>Info</b> and higher will be pushed.</p>
       <br/>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <input class="btn btn-success" type="submit" id="submitPush"
-                 name="submitPush" value="Push" />
+      <form id="pushToGAForm" name="pushToGAForm" action="{{ path }}" method="POST"
+        class="form-horizontal" role="form">
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <input class="btn btn-success" type="submit" id="submitPush"
+                   name="submitPush" value="Push" />
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   </div>
-  </form>
   <div class="panel panel-default">
     <div class="panel-heading">
       <h3 class="panel-title">Log History</h3>
