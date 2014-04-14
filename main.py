@@ -56,7 +56,6 @@ PAGES = OrderedDict([
          ])
 
 GA_URL_ENDPOINT = "http://www.google-analytics.com/collect"
-GA_PROPERTY_ID = "UA-49801701-2"
 GA_ANONYMOUS_CLIENT_ID = "1234567890"  # ???
 
 class AnalyticsStatus(ndb.Model):
@@ -152,11 +151,19 @@ class MainHandler(webapp2.RequestHandler):
     return logs
 
   def _render_page(self, alertMessage, alertLevel):
+    propertyId = os.getenv('GA_PROPERTY_ID', None)
+    if propertyId is None:
+      alertMessage = ("Please set the GA_PROPERTY_ID field in your app.yaml "
+                      "file.")
+      alertLevel = "alert-danger"
+    hostname = os.getenv('GA_DEFAULT_HOSTAME', None)
     username = users.User().nickname()
     template = JINJA_ENVIRONMENT.get_template('index.html')
     logs = self._get_log_messages(None, self.LOG_MESSAGES_NUM_TO_DISPLAY)
     lastpushtime, offset = self._get_analytics_status()
     self.response.out.write(template.render({
+      "propertyId": propertyId,
+      "hostname": hostname,
       "pages": PAGES,
       "path": self.request.path,
       "pagename": self._get_page_name(),
@@ -217,7 +224,7 @@ class MainHandler(webapp2.RequestHandler):
   def _post_to_ga(self, type, description, isFatal):
     form_fields = {
       "v": "1",
-      "tid": GA_PROPERTY_ID,
+      "tid": os.environ['GA_PROPERTY_ID'],
       "cid": GA_ANONYMOUS_CLIENT_ID,
       "t": type,
       "exd": description,

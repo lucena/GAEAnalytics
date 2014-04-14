@@ -35,7 +35,12 @@ handlers:
   login: required
 
 env_variables:
-  FOO: 200
+  # Place your Google Analytics Property/Tracking Id here. This is typically
+  # found in your GA Property Settings page for your specific application/site.
+  GA_PROPERTY_ID: "UA-49801701-2"
+  # Set the Default Hostname which should be the Default URL without the
+  # http:// or https:// prefix.
+  GA_DEFAULT_HOSTAME: "paranhao69.appspot.com"
 
 libraries:
 - name: webapp2
